@@ -1,4 +1,4 @@
-<?php
+<?php // @codingStandardsIgnoreFile
 $this->render('downloads/downloads/sidebar', array('active' => 'latest'));
 
 $headTitle = $this->headTitle();
@@ -39,7 +39,7 @@ $zf1Date    = $this->releases->getReleaseDate($zf1Version);
             alt="Zend Server">
 
         <br>
-        an Enterprise-ready PHP Application Stack
+        the Professional PHP Distribution
 
         <br>
 
@@ -52,6 +52,15 @@ $zf1Date    = $this->releases->getReleaseDate($zf1Version);
 
 <h2 id="ZF2">Zend Framework 2</h2>
 
+<div class="composer-download">
+    <h3>Versions 2.5+</h3>
+
+    <p>
+        If you are using or wanting to use versions 2.5 and up, please <a 
+        href="/downloads/composer">use Composer</a> at this time.
+    </p>
+</div>
+
 <table class="twelve">
     <tr>
         <td class="alpha">
@@ -59,7 +68,7 @@ $zf1Date    = $this->releases->getReleaseDate($zf1Version);
         </td>
 
         <td>
-            <h4>Zend Framework Full Package</h4>
+            <h4>Zend Framework <?php echo $zf2Version ?> Full Package</h4>
             <p>
                 Download the latest full release from the high-speed zend.com 
                 Content Delivery Network (CDN). Contains Zend Framework and all 
@@ -158,7 +167,7 @@ $zf1Date    = $this->releases->getReleaseDate($zf1Version);
         </td>
 
         <td>
-            <h4>Zend Framework Full Package</h4>
+            <h4>Zend Framework <?php echo $zf1Version ?> Full Package</h4>
             <p>
                 Download the latest releases from the high-speed zend.com 
                 Content Delivery Network (CDN). Contains Zend Framework and all 
@@ -280,7 +289,7 @@ $zf1Date    = $this->releases->getReleaseDate($zf1Version);
                 The Google Data APIs are a set of web services for read/write
                 access to applications hosted by Google. Zend_Gdata provides
                 PHP 5 client interfaces for the Google Data APIs. See the
-                <a href="http://code.google.com/apis/gdata/index.html">Google
+                <a href="https://developers.google.com/gdata/?hl=en">Google
                 GData site</a> for more information.
             </p>
         </td>

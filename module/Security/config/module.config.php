@@ -1,8 +1,44 @@
-<?php
+<?php // @codingStandardsIgnoreFile
 return array(
     'security' => array(
         'page_size' => 15,
         'advisories' => array(
+            'ZF2015-10' => array(
+                'title' => 'ZF2015-10: Potential Information Disclosure in Zend\Crypt\PublicKey\Rsa\PublicKey',
+                'date'  => 'Mon, 23 November 2015 14:30:00 -0500',
+            ),
+            'ZF2015-09' => array(
+                'title' => 'ZF2015-09: Potential Information Disclosure and Insufficient Entropy vulnerability in Zend\Captcha\Word',
+                'date'  => 'Mon, 23 November 2015 14:30:00 -0500',
+            ),
+            'ZF2015-08' => array(
+                'title' => 'ZF2015-08: Potential SQL injection vector using null byte for PDO (MsSql, SQLite)',
+                'date'  => 'Tue, 15 September 2015 14:15:00 -0500',
+            ),
+            'ZF2015-07' => array(
+                'title' => 'ZF2015-07: Filesystem Permissions Issues in Multiple Components',
+                'date'  => 'Tue, 15 September 2015 14:15:00 -0500',
+            ),
+            'ZF2015-06' => array(
+                'title' => 'ZF2015-06: XXE/XEE vector when using ZendXml on multibyte payloads',
+                'date'  => 'Mon, 03 August 2015 14:15:00 -0500',
+            ),
+            'AG2015-01' => array(
+                'title' => 'AG2015-01: Potential Authenticated User Spoofing in zf-oauth2',
+                'date'  => 'Thu, 23 July 2015 12:00:00 -0500',
+            ),
+            'ZF2015-05' => array(
+                'title' => 'ZF2015-05: Potential XSS and Open Redirect vectors in zend-diactoros',
+                'date'  => 'Thu, 23 June 2015 10:50:00 -0500',
+            ),
+            'ZF2015-04' => array(
+                'title' => 'ZF2015-04: Potential CRLF injection attacks in mail and HTTP headers',
+                'date'  => 'Thu, 07 May 2015 12:13:00 -0500',
+            ),
+            'ZF2015-03' => array(
+                'title' => 'ZF2015-03: Invalid CSRF validation of null or incorrectly formatted token identifiers',
+                'date'  => 'Thu, 12 March 2015 10:00:00 -0500',
+            ),
             'ZF2015-02' => array(
                 'title' => 'ZF2015-02: Potential SQL injection in PostgreSQL Zend\Db adapter',
                 'date'  => 'Wed, 18 February 2015 15:00:00 -0500',

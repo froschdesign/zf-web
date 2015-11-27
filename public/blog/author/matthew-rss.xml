@@ -3,15 +3,339 @@
   <channel>
     <title>Author: Matthew Weier O'Phinney - ZF Blog</title>
     <description>Author: Matthew Weier O'Phinney - ZF Blog</description>
-    <pubDate>Wed, 18 Feb 2015 21:00:00 +0000</pubDate>
+    <pubDate>Wed, 25 Nov 2015 21:45:00 +0000</pubDate>
     <generator>Zend_Feed_Writer 2 (http://framework.zend.com)</generator>
     <link>http://framework.zend.com/blog/author/matthew.html</link>
     <atom:link rel="self" type="application/rss+xml" href="http://framework.zend.com/blog/author/matthew-rss.xml"/>
     <item>
-      <title>Zend Framework 2.2.10 and 2.3.5 Released!</title>
-      <pubDate>Wed, 18 Feb 2015 21:00:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-2-2-10-and-2-3-5-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-2-2-10-and-2-3-5-released.html</guid>
+      <title>Zend Framework 3 Update and Roadmap</title>
+      <pubDate>Wed, 25 Nov 2015 21:45:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-3-update-and-roadmap.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-3-update-and-roadmap.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>In October, while at ZendCon, I presented a talk on Zend Framework 3 entitled
+&quot;Components, PSR-7, and Middleware: Zend Framework 3.&quot; You can
+<a href="http://weierophinney.github.io/2015-10-22-ZF3/">view it online</a>, but this post
+discusses current status, details some decisions, and points to the work still
+to be done.  It's a long read; grab a warm beverage, maybe some popcorn, and
+take your time.</p><h2>Prelude</h2>
+<p>Zend Framework 3 is not just a new release of the framework. It's an <em>initiative</em>,
+encompassing a number of strategies and projects. Do not get hung up on when the
+main Zend Framework repository will be tagged as 3.0; the MVC is just one part
+of an overall plan. This post details those parts; many of them are <em>already
+accomplished.</em> Hopefully, by the end of this post, you'll see what you can
+already leverage, and what you <em>may already be leveraging.</em></p>
+<p>Mirroring my ZendCon presentation, I've broken this out into four primary parts:
+Components, PSR-7, Middleware, and Zend Framework 3.</p>
+<h2>Components</h2>
+<p>Zend Framework was originally envisioned and positioned as a component library
+that <em>also</em> shipped an MVC framework. Unlike <a href="http://pear.php.net">PEAR</a>, it was
+all-or-nothing; if you wanted a single component, you downloaded the entire
+framework; if you wanted to use the MVC framework, you downloaded the entire
+framework. Over time, the MVC became the predominant feature, and most code was
+written or adapted to ensure the various components worked properly when used
+with the framework, with very little emphasis on standalone usage.</p>
+<p>When we started on ZF2, we essentially continued down this path. However, early
+in the ZF2 development, <a href="https://getcomposer.org">Composer</a> emerged in the PHP
+ecosystem, and we decided to leverage that both for distribution of ZF itself,
+but also for its components. However, the semi-manual/semi-automated approach we
+used made components second-class citizens, requiring them to be versioned
+simultaneously, resulting in slower releases.</p>
+<p>As a result, a primary goal of the ZF3 initiatives was to split the components
+into their own repositories, with their own development cycles; the main Zend
+Framework repository then becomes a meta-package, defining the individual
+components as dependencies, but shipping no actual code.</p>
+<p>The split took quite some time to orchestrate, but
+<a href="https://mwop.net/blog/2015-05-15-splitting-components-with-git.html">was accomplished in May</a>,
+with the help of <a href="https://github.com/gianarb">Gianluca Arbezzano</a> and
+<a href="http://www.corley.it/">Corley</a>, and released as version 2.5.</p>
+<p>I'll be following up this post with some of the benefits we've gained from the
+split, but the overall point is that the separation will help us improve
+components more granularly, expand the number of contributors, and accelerate
+component development.</p>
+<p>Composer has been wildly successful. It simplifies and streamlines the ability
+to manage application dependencies, as well as consume them in your code (by
+providing a common autoloader for all dependencies). Our observation is that an
+increasing number of developers and companies are choosing to piece together
+bespoke frameworks targeted at their business needs using commodity components.
+Splitting component lifecycles facilitates usage of ZF components in these
+paradigms.</p>
+<h2>PSR-7</h2>
+<p><a href="http://www.php-fig.org/psr/psr-7/">PSR-7</a> (<a href="http://www.php-fig.org/psr/psr-7/meta/">meta</a>)
+defines a set of HTTP message interfaces. PHP Standard Recommendations (PSR) are
+a product of the <a href="http://www.php-fig.org/">Framework Interop Group</a>, which
+exists to identify existing practices and development approaches, and
+standardize them, with the goal of increasing interoperability between
+frameworks and libraries. Composer is the fruit of the very first PSR,
+<a href="http://www.php-fig.org/psr/psr-0/">PSR-0</a>, which provided a common methodology
+around autoloading.</p>
+<p>PSR-7 exists because PHP, for all its web centricity, does not actually model
+HTTP messages. Most frameworks have provided message abstraction of one form or
+another since 2005, but they all differ, which means migrating from one
+framework or HTTP client library to another — or even one <strong>version</strong> of
+such a project to another — requires learning a new system for dealing
+with HTTP messages.</p>
+<p>Interestingly, other languages, including Python, Ruby, and Node.js, <em>do</em>
+provide common HTTP message abstractions, and the result is that code written
+targeting HTTP messages will typically work regardless of the framework chosen.
+This leads to a lot of cross-pollination, and allows developers to pick and
+choose libraries based on their strengths and features, not on the framework.</p>
+<p>Many of us in the PHP community feel that HTTP message abstractions should be a
+<em>commodity</em>.</p>
+<p>PSR-7 accomplishes this, and code targeting PSR-7 can thus be re-used by any
+framework or project that also consumes PSR-7.</p>
+<p>PSR-7 was accepted in mid-May; the same day it was accepted, we released:</p>
+<ul>
+<li>
+<a href="https://github.com/zendframework/zend-diactoros">Diactoros</a>, a PSR-7
+implementation.</li>
+<li>
+<a href="https://github.com/zendframework/zend-stratigility">Stratigility</a>, a
+PSR-7 middleware foundation inspired by <a href="https://github.com/senchalabs/connect">Sencha Connect</a>.</li>
+</ul>
+<p>We feel that PSR-7 is the future of PHP interoperability when writing
+HTTP-centric applications, and these components form a foundation for projects
+that choose to target PSR-7.</p>
+<h2>Middleware and Expressive</h2>
+<p>When describing Stratigility in the previous section, I used the term
+&quot;middleware.&quot; What is middleware?</p>
+<p>Middleware is, quite simply, code sitting between an incoming HTTP request, and
+the outgoing HTTP response. There are a number of different middleware
+signatures floating around (subject for a pending blog post!), but the one we've
+implemented in Stratigility is:</p>
+<pre><code class="language-php">function (
+    ServerRequestInterface $request
+    ResponseInterface $response,
+    callable $next
+) : ResponseInterface
+</code></pre>
+<p>where <code>$next</code> can be used to invoke the next middleware in the system, if any.
+This same signature is being adopted by a number of emerging PSR-7
+centric projects such as <a href="http://relayphp.com">Relay</a>, and <a href="http://www.slimframework.com/2015/02/11/whats-up-with-version-3.html">Slim v3</a>.</p>
+<p><a href="http://framework.zend.com/expressive">Expressive</a> is a new <em>microframework</em> for
+building PSR-7 middleware applications.</p>
+<p>Built on top of Stratigility, Expressive is meant to provide minimal plumbing
+for your applications. A primary goal is to allow <em>you</em> to choose the components
+you want, and then to provide minimal wiring to get you started. It provides:</p>
+<ul>
+<li>typehinting against <a href="https://github.com/container-interop/container-interop">container-interop</a>
+allowing <em>you</em> to select a service container from which to pull middleware
+once matched.</li>
+<li>a <code>RouterInterface</code>, and several implementations, so you can choose a routing
+implementation that best suits your application needs.</li>
+<li>a <code>TemplateRendererInterface</code>, and several implementations, so you can choose
+a template engine that suits the needs of the middleware you write that may
+use templating — and allow you to swap out engines seamlessly.</li>
+<li>an error handling mechanism, and choices for how to handle errors in both
+development and production.</li>
+</ul>
+<p>We leverage Composer's installation hooks to prompt you for your choices (thanks
+for the contribution, <a href="https://xtreamwayz.com">Geert</a>!), so that once you
+install the Expressive skeleton, you're prepared to start developing
+immediately.</p>
+<p>Expressive is currently in release candidate status, and we hope to finalize a
+stable release soon!</p>
+<p>We like middleware because:</p>
+<ul>
+<li>it tends to be very focused and small, and thus readily understood.</li>
+<li>it adapts the <a href="https://en.wikipedia.org/wiki/Unix_philosophy">Unix philosphy</a>
+(creating complex behavior by piping messages between single-purpose tools)
+to HTTP applications.</li>
+<li>it tends to be quite performant.</li>
+</ul>
+<p>Any middleware that targets PSR-7 also gains the ability to interop with any
+other system targeting PSR-7. This means that the ecosystem for middleware users
+is not a single framework, but any framework that uses PSR-7. We're already
+seeing <a href="http://github.com/oscarotero/psr7-middlewares">amazing middleware libraries</a>
+popping up, and these will work <em>across the PHP ecosystem</em>. Providing a
+middleware microframework via Expressive allows our users to capitalize on this.</p>
+<h2>Zend Framework 3</h2>
+<p>For many, &quot;Zend Framework 3&quot; means the MVC framework; as such, much of the above
+may feel like a sideshow, not the main thrust of the new version. This is a
+misconception.</p>
+<p>We decided early this year that we will <em>not</em> be changing the MVC significantly.</p>
+<p>When we went from version 1 to version 2, we did a complete rewrite of the MVC.
+While the new MVC is architecturally superior, its completely different
+structure meant there was zero way to automate migration, which left many ZF1
+users stranded. We did not want to repeat this mistake.</p>
+<p>Additionally, the primary issues around the current MVC are:</p>
+<ul>
+<li>performance</li>
+<li>interoperability (specifically, ability to use middleware)</li>
+</ul>
+<p>These are things we <em>can</em> tackle, while retaining most, if not all, backwards
+compatibility.</p>
+<p>As such, the primary changes we identified were:</p>
+<ul>
+<li>zend-servicemanager performance</li>
+<li>zend-eventmanager performance</li>
+<li>ability to dispatch PSR-7 middleware</li>
+<li>reduction of dependencies</li>
+</ul>
+<h3>ServiceManager</h3>
+<p>We feel zend-servicemanager offers some unique features that are not found in
+other containers:</p>
+<ul>
+<li>lazy services</li>
+<li>delegator services</li>
+<li>interface injection (via initializers)</li>
+<li>abstract factories</li>
+</ul>
+<p>As such, there are tremendous reasons to choose it over other containers.
+However, when you have large object graphs, and if you're heavily using features
+such as abstract factories and initializers, the design in v2 can become
+tremendously slow.</p>
+<p><a href="http://www.michaelgallego.fr">Michäel Gallego</a> did some deep analysis of the
+service manager, and identified ways the performance could be radically
+improved, providing a hefty patch to do so. The main issue was that much of the
+code for loading services was checking for state changes in the container; as
+such, the main thrust of the patch Michäel provided was to have state changes
+— additions of factories to the container — reconfigure the
+container, so that <em>pulling</em> from the container becomes cheap. The result is a
+4X performance boost that is <em>mostly</em> backwards compatible!</p>
+<p>There are a few BC breaks with this change, however, which means any component
+that provides factories is requiring updates to be compatible. These are mostly
+minor, and we're currently working on ways we may be able to make code forwards
+compatible while retaining backwards compatibility.</p>
+<p>You can read about the changes in the <a href="https://github.com/zendframework/zend-servicemanager/blob/develop/doc/book/migration.md">migration guide</a>.</p>
+<h3>EventManager</h3>
+<p>Similarly, zend-eventmanager is a unique offering, providing mechanisms for:</p>
+<ul>
+<li>intercepting filters</li>
+<li>subject/observer</li>
+<li>signal slots</li>
+<li>events</li>
+</ul>
+<p>In order to accomplish this, however, it has a lot of code around checking for
+changes in shared listeners. Additionally, it has leveraged shared solutions
+such as the <code>PriorityQueue</code> implementation in zend-stdlib, which provide
+necessary features, but often at a performance cost.</p>
+<p>Michäel Gallego, along with <a href="http://www.zimuel.it">Enrico Zimuel</a>, performed
+comprehensive profiling, and provided a refactor of the component that resulted
+in 4X performance benefits!</p>
+<p>You can read about the changes in the <a href="https://github.com/zendframework/zend-eventmanager/tree/develop/doc/book/migration">migration guide</a>.
+Of particular interest is that the 2.7 version provides forwards compatibility
+features allowing you to prepare your applications <em>now</em> for version 3!</p>
+<h3>Dispatching Middleware</h3>
+<p>As noted in the previous section on PSR-7, we feel that the future of
+PHP web applications is in middleware. We want users to benefit from the
+middleware ecosystem, but also to migrate to it. To enable this, we decided to
+build a <code>MiddlewareListener</code> for zend-mvc.</p>
+<p>First, though, we had to build <a href="https://github.com/zendframework/zend-psr7bridge">a PSR-7 bridge</a>,
+to allow translation of the zend-http request and response messages already
+present in zend-mvc to PSR-7, and vice versa. (We chose <em>not</em> to use PSR-7
+directly in zend-mvc, as doing so would require changes anywhere you were
+previously using the request and/or response objects.) This code can be used
+now, anywhere you need to do such translations.</p>
+<p>With that out of the way, we developed the <code>MiddlewareListener</code>. In v3, this
+will be registered by default, at a higher priority than the standard
+<code>DispatchListener</code>. If it detects a <code>middleware</code> key in the route matches, it
+will pull that middleware from the container and dispatch it, using the PSR-7
+bridge; otherwise, it will return early, allowing the <code>DispatchListener</code> to take
+over.</p>
+<p>The <code>MiddlewareListener</code> thus becomes your migration path from the zend-mvc to
+Expressive or other middleware stacks, but also allows you to compose middleware
+from the greater ecosystem in your zend-mvc applications!</p>
+<p>This feature is available currently on the develop branch of zend-mvc, and will
+be released with v3 of that component.</p>
+<h3>Reducing Dependencies</h3>
+<p>Currently, the framework repository requires <em>every</em> Zend Framework component
+(except the new ones such as Diactoros, Stratigility, Expressive, and the PSR-7
+bridge). This poses a problem: what if we want to update another component
+earlier than others? How will users then opt-in to such new versions?</p>
+<p>As an example, we're pushing back plans for refactoring the filter, validator,
+input filter, and form components, as the proposed changes will take quite some
+time. However, not every application <em>needs</em> these facilities, and those that do
+<em>should</em> be able to selectively upgrade. But if we pin to semantic versions
+— e.g., <code>~3.0</code> — users will not be able to do so until the framework
+upgrades, making it an all or nothing approach.</p>
+<p>As such, we've decided to change the requirements for zend-mvc, the framework
+repository, and the skeleton to the bare minimum needed for an MVC application.
+We're still scoping this effort, however, so there's time to get your feedback
+considered.</p>
+<p>This will, of course, affect existing applications. You will need to add in
+dependencies that previously were assumed. Composer, however, makes these
+relatively trivial:</p>
+<pre><code class="language-bash">$ composer require zendframework/zend-form
+$ composer require zendframework/zend-session
+$ composer require zendframework/zend-paginator
+</code></pre>
+<p>The more problematic part of this will be registration of abstract factories,
+plugin managers, etc. We're still working on a plan for that, and encourage you
+<a href="https://github.com/zendframework/zend-mvc/issues/46">to share any ideas you might have around it</a>.</p>
+<h2>Documentation</h2>
+<p>One area where Zend Framework is consistently criticized is its documentation.</p>
+<ul>
+<li>We don't have enough documentation</li>
+<li>Documentation isn't updated to reflect new features.</li>
+<li>Documentation doesn't detail how to consume a component within the MVC
+framework; or</li>
+<li>Documentation doesn't detail how to use the component standalone.</li>
+</ul>
+<p>With the split to component repositories, we can tackle some of this more
+easily. We are in the process of moving all documentation into the relevant
+component repositories, which allows us to block merging of features based on
+lack of contributed documentation. This will help us keep the documentation
+up-to-date.</p>
+<p>However, we need help <em>writing</em> documentation. We need <em>you</em> to indicate what
+documentation you feel is missing — and, better yet, <em>contribute</em> that
+documentation, to help others in the same situation. One reflection I've made is
+that writing documentation often also points to ways to improve the code; don't
+discount writing documentation as a non-coding activity!</p>
+<p>The documentation migration is being faciliated by <a href="http://blog.hock.in">Gary Hockin</a>.
+He is automating the migration via a series of scripts, and also creating issues
+on each repository indicating common updates that need to happen to fully
+complete the transition from reStructured Text to Markdown. You can help by
+perusing the list available at the link below, and submitting pull requests:</p>
+<ul>
+<li>
+<a href="https://github.com/issues?utf8=%E2%9C%93&amp;q=is:open+is:issue+org:zendframework+label:documentation+label:EasyFix">Documentation migration issue list</a>
+</li>
+</ul>
+<p>At the time of writing, he has not yet run the script over all repositories, but
+indicates that he should accomplish this feat within the next 10 days; as such,
+keep checking that link!</p>
+<h2>Roadmap</h2>
+<p>As noted, we've made significant progress since announcing the ZF3 initiative in
+March. We still have a ways to go, however:</p>
+<ul>
+<li>We're still finalizing changes to Expressive prior to a stable release.</li>
+<li>We're only halfway through the
+<a href="https://github.com/zendframework/maintainers/wiki/ZF3-code-refactoring">list of components needing service manager and/or event manager migrations</a>,
+and could use some assistance completing this task. We cannot do a zend-mvc
+beta currently until this is done.</li>
+<li>We're still identifying what components will be considered &quot;core&quot; to the MVC,
+and could <a href="https://github.com/zendframework/zend-mvc/issues/46">use your feedback</a>.</li>
+<li>Related, we're still identifying what components will be considered &quot;core&quot; to
+the framework, if the list is not identical to those in the MVC; again,
+<a href="https://github.com/zendframework/zf2/issues/7646">feedback is welcome</a>.</li>
+</ul>
+<p>For a number of considerations, we cannot at this time create a date-based
+roadmap; we will do releases when code is ready and meets the project quality
+guidelines. The links above, and in the documentation section, provide ways that
+you can help; the more help we get, the sooner we can potentially release.</p>
+<h2>Closing Notes</h2>
+<p>First, this post was long, and also long overdue. My plan going forward is to
+provide bi-weekly updates on the <a href="http://framework.zend.com/blog/">Zend Framework blog</a>,
+so that you, Zend Framework's users and development community, can keep track
+of progress. In those, I will also be listing areas where we can particularly
+use contributions. Be aware, however, that with holidays coming up in many countries,
+that progress will be slow in the short-term.</p>
+<p>We're very excited about the Zend Framework 3 <em><strong>initiative</strong></em>. It's a change in
+direction for the framework, returning to its roots as a component library
+first, which happens to also provide a full-stack framework.</p>
+<p>We see ZF3 as a movement: an end to framework silos, by providing quality,
+commodity code that can be used everwhere and anywhere. An end to saying &quot;I'm a
+ZF developer,&quot; or &quot;I'm a Laravel developer,&quot; and a return to, &quot;I'm a PHP
+developer.&quot; We hope you'll help us complete that journey!</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 1.12.17 and 2.4.9 Released!</title>
+      <pubDate>Mon, 23 Nov 2015 20:30:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-1-12-17-and-2-4-9-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-1-12-17-and-2-4-9-released.html</guid>
       <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
       <dc:creator>Matthew Weier O'Phinney</dc:creator>
       <content:encoded><![CDATA[<p>
@@ -20,8 +344,8 @@
 </p>
 
 <ul>
-    <li>Zend Framework <strong>2.2.10</strong></li>
-    <li>Zend Framework <strong>2.3.5</strong></li>
+    <li>Zend Framework <strong>1.12.17</strong></li>
+    <li>Zend Framework <strong>2.4.9</strong></li>
 </ul>
 
 <ul>
@@ -31,600 +355,518 @@
 </ul>
 
 <p>
-    These are security releases.
+    These releases contain security fixes.
+</p><h2>Security Fixes</h2>
+
+<h3>ZF2015-09</h3>
+
+<p>
+    <a href="/security/advisory/ZF2015-09">ZF2015-09</a> provides a security hardening
+    patch for users of our word-based CAPTCHA adapters, ensuring better randomization
+    of the letters generated.
+</p>
+
+<p>
+    This particular issue touches each of the following projects, and was fixed in the
+    versions specified:
+</p>
+
+<ul class="ul">
+    <li>Zend Framework 1, version 1.12.17</li>
+    <li>Zend Framework 2, versions 2.4.9</li>
+    <li>zend-captcha, versions 2.4.9 and 2.5.2</li>
+</ul>
+
+<h3>ZF2015-10</h3>
+
+<p>
+    <a href="/security/advisory/ZF2015-10">ZF2015-10</a> addresses potential information
+    disclosure for users of Zend Framework's <code>Zend\Crypt\PublicKey\Rsa</code> support,
+    due to an insecure OpenSSL padding default. The issue is patched in Zend
+    Framework 2.4.9 and zend-crypt 2.4.9/2.5.2.
+</p>
+
+<h2>Changelog</h2>
+
+<p>
+    For the full changelog on each version:
+</p>
+
+<ul>
+    <li><a href="/changelog/1.12.17">http://framework.zend.com/changelog/1.12.17</a></li>
+    <li><a href="/changelog/2.4.9">http://framework.zend.com/changelog/2.4.9</a></li>
+</ul>
+
+<h2>Long Term Support</h2>
+
+<p>
+    As a reminder, the 2.4 series is our current Long Term Support release, and will
+    receive security and critical bug fixes until 31 March 2018.
+</p>
+
+<p>
+    You can opt-in to the LTS version by pinning your <code>zendframework/zendframework</code>
+    <a href="https://getcomposer.org">Composer</a> requirement to the version <code>~2.4.0</code>.
+</p>
+
+<p>
+    <a href="/long-term-support">Visit our Long Term Support information page</a> for more information.
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 1.12.16 and 2.4.8 Released!</title>
+      <pubDate>Tue, 15 Sep 2015 19:00:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-1-12-16-and-2-4-8-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-1-12-16-and-2-4-8-released.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>
+    The Zend Framework community is pleased to announce the immediate availability
+    of:
+</p>
+
+<ul>
+    <li>Zend Framework <strong>1.12.16</strong></li>
+    <li>Zend Framework <strong>2.4.8</strong></li>
+</ul>
+
+<ul>
+    <li>
+        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
+    </li>
+</ul>
+
+<p>
+    These releases contain a security fixes.
+</p><h2>Security Fixes</h2>
+
+<h3>ZF2015-07</h3>
+
+<p>
+    <a href="/security/advisory/ZF2015-07">ZF2015-07</a> addresses attack vectors that
+    arise due to incorrect permissions masks when creating directories and files
+    within library code.
+</p>
+
+<p>
+    This particular issue touches each of the following projects, and was fixed in the
+    versions specified:
+</p>
+
+<ul class="ul">
+    <li>Zend Framework 1, version 1.12.16</li>
+    <li>Zend Framework 2, versions 2.4.8</li>
+    <li>zf-apigility-doctrine, version 1.0.3</li>
+    <li>zend-cache, versions 2.4.8 and 2.5.3</li>
+</ul>
+
+<h3>ZF2015-08</h3>
+
+<p>
+    <a href="/security/advisory/ZF2015-08">ZF2015-08</a> addresses potential null byte
+    injection of SQL statements issued using Zend Framework's pdo_dblib
+    (FreeTDS) and pdo_sqlite adapters. The issue is patched in Zend Framework 1.12.16.
+</p>
+
+<h2>Changelog</h2>
+
+<p>
+    For the full changelog on each version:
+</p>
+
+<ul>
+    <li><a href="/changelog/1.12.16">http://framework.zend.com/changelog/1.12.16</a></li>
+    <li><a href="/changelog/2.4.8">http://framework.zend.com/changelog/2.4.8</a></li>
+</ul>
+
+<p>
+    In particular, the 2.4.8 release has numerous fixes in the InputFilter, Validator, and Form
+    components introduced to increase stability and reinstate behavior prior to version 2.4.0.
+    At this time, forms and input filters created using code from pre-2.4 should work identically.
+</p>
+
+<p>
+    We have, however, <em>deprecated</em> the <code>allow_empty</code> and <code>continue_if_empty</code>
+    flags, and provided notes in the changelog that describe alternatives to their usage. We have found 
+    that these flags, particularly in combination with the <code>required</code> flag and validators,
+    can lead to unexpected or unintended behavior, often contradictory. Deprecating them will
+    allow us to introduce cleaner solutions in future releases.
+</p>
+
+<h2>Long Term Support</h2>
+
+<p>
+    As a reminder, the 2.4 series is our current Long Term Support release, and will
+    receive security and critical bug fixes until 31 March 2018.
+</p>
+
+<p>
+    You can opt-in to the LTS version by pinning your <code>zendframework/zendframework</code>
+    <a href="https://getcomposer.org">Composer</a> requirement to the version <code>~2.4.0</code>.
+</p>
+
+<p>
+    <a href="/long-term-support">Visit our Long Term Support information page</a> for more information.
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Announcing Expressive</title>
+      <pubDate>Wed, 26 Aug 2015 18:25:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/announcing-expressive.html</link>
+      <guid>http://framework.zend.com/blog/announcing-expressive.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>
+    We are pleased to announce the immediate availability of a new project, 
+    <a href="https://github.com/zendframework/zend-expressive">Expressive</a>!
+</p>
+
+<p>
+    Expressive allows you to write <a href="http://www.php-fig.org/psr/psr-7/">PSR-7</a>
+    <a href="https://github.com/zendframework/zend-stratigility/blob/master/doc/book/middleware.md">middleware</a>
+    applications for the web. It is a simple micro-framework built on top of
+    <a href="https://github.com/zendframework/zend-stratigility">Stratigility</a>, providing:
+</p>
+
+<ul>
+    <li>Dynamic routing</li>
+    <li>Dependency injection via container-interop</li>
+    <li>Templating</li>
+    <li>Error Handling</li>
+</ul><h2>Installation and Quick Start</h2>
+
+<p>
+    Expressive can get you up and running with an application in minutes.
+</p>
+
+<p>
+    To install, use <a href="https://getcomposer.org">Composer</a>:
+</p>
+
+<pre><code class="lang-bash">
+$ composer require zendframework/zend-expressive aura/router zendframework/zend-servicemanager
+</code></pre>
+
+<p>
+    From there to "hello, world,", all you now need is a single file:
+</p>
+
+<pre><code class="lang-php">
+// In index.php
+use Zend\Expressive\AppFactory;
+
+require 'vendor/autoload.php';
+
+$app = AppFactory::create();
+$app->route('/', function ($request, $response, $next) {
+    $response->getBody()->write('Hello, world!');
+    return $response;
+});
+$app->run();
+</code></pre>
+
+<p>
+    From there, fire up the built-in web server:
+</p>
+
+<pre><code class="lang-bash">
+$ php -S 0.0.0.0:8080 -t .
+</code></pre>
+
+<p>
+    Browse to localhost:8080, and you should see it running!
+</p>
+
+<p>
+    Visit <a href="http://zend-expressive.readthedocs.org/en/stable/quick-start/">our documentation for the full quick start</a>.
+</p>
+
+<h2>Breaking out of the box</h2>
+
+<p>
+    A huge part of the PHP Renaissance has been due to the advent of
+    <a href="https://getcomposer.org">Composer</a>, which has simplified dependency
+    management, and led to tens of thousands of standalone libraries and packages.
+    As such, frameworks, while still popular, are often being eschewed for
+    homemade, application-specific frameworks made of commodity components.
+    Frameworks simply cannot ignore this trend, and decoupling should become
+    the norm going forward.
+</p>
+
+<p>
+    With <a href="https://apigility.org">Apigility</a>, the Zend Framework team
+    began using third party software as part of the solutions it provides. With
+    Expressive, we took that even further: we provide abstractions for routing
+    and templating capabilities, but largely rely on third-party libraries for
+    the recommended implementations.
+</p>
+
+<p>
+    Expressive features integrations with:
+</p>
+
+<ul>
+    <li>Aura.Router</li>
+    <li>FastRoute</li>
+    <li>Pimple</li>
+    <li>Plates</li>
+    <li>Twig</li>
+</ul>
+
+<p>
+    as well as related Zend Framework components. In most cases, integrations
+    were developed for third party libraries <em>before</em> we wrote integrations
+    with Zend Framework components!
+</p>
+
+<p>
+    As such, Expressive is a small, single-purpose component that can integrate
+    other components to create a custom middleware runtime for your applications.
+</p>
+
+<h2>Where does this fit with Zend Framework?</h2>
+
+<p>
+    We feel that PSR-7 opens new paradigms for both interoperability as well as
+    for application design. Middleware offers a pattern for re-use and
+    composability that is often far simpler to understand, and which often
+    allows building complex applications from smaller pieces. As such, we want
+    to provide an easy way to build middleware-based applications <em>now</em>.
+</p>
+
+<p>
+    We will, however, continue to ship Zend Framework and its full-stack MVC.
+    Many complex applications can benefit from the highly flexible structure it
+    provides, and we plan to continue supporting those users well into the
+    future. We also plan to add capabilities (quite soon!) for executing PSR-7
+    based middleware from within Zend Framework applications; this provides
+    migration paths in both directions for developers.
+</p>
+
+<h2>More Information and Roadmap</h2>
+
+<p>
+    Expressive is open source software, and we're trying to follow the mantra of
+    "release early, release often." As such, our initial stable tag is at 0.1.0,
+    and we're requesting that you start playing with it and letting us know what
+    works and what doesn't. You can report issues on the <a href="https://github.com/zendframework/zend-expressive/issues">issue tracker</a>.
+</p>
+
+<p>
+    One big push for us has been to document everything we can; you can currently
+    <a href="http://zend-expressive.readthedocs.org/en/stable/">browse our documentation on ReadTheDocs</a>.
+    If you have questions, changes, or additions you feel should be made, documentation
+    is part of the code repository itself, and issues can be raised just as they can
+    for code.
+</p>
+
+<p>
+    While this is an initial offering, we've put a lot of thought into the various
+    features and abstractions, and feel it is essentially feature complete. We do,
+    however, have a bucket list of additional features we wish to support before
+    we go stable:
+</p>
+
+<ul>
+    <li>A skeleton application. Ideally, we would like Composer hooks that can
+        ask which implementations for routing, container, and/or templating
+        are desired. If you know how to do this, we'd love your help!</li>
+    <li>Session encryption.</li>
+    <li>HTTP Caching support.</li>
+    <li>User authentication (via OAuth2 and/or other social auth mechanisms).</li>
+</ul>
+
+<p>
+    Additionally, in the coming weeks, we'll be expanding our
+    <a href="https://github.com/zendframework/zend-psr7bridge">PSR-7 &lt;-&gt; zend-http bridge</a>,
+    and creating an alternate, PSR-7 middleware dispatcher that can be used
+    with the ZF2 MVC.
+</p>
+
+<p>
+    We welcome any assistance you as contributors can offer in these initiatives!
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 1.12.15 and 2.4.7 Released!</title>
+      <pubDate>Tue, 11 Aug 2015 17:30:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-1-12-15-and-2-4-7-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-1-12-15-and-2-4-7-released.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>
+    The Zend Framework community is pleased to announce the immediate availability
+    of:
+</p>
+
+<ul>
+    <li>Zend Framework <strong>1.12.15</strong></li>
+    <li>Zend Framework <strong>2.4.7</strong></li>
+</ul>
+
+<ul>
+    <li>
+        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
+    </li>
+</ul><h2>Zend Framework 1.12.15</h2>
+
+<p>
+    Zend Framework 1.12.15 contains several fixes to ensure backwards compatibility
+    with previous releases as well as supported PHP versions:
+</p>
+
+<ul>
+    <li><a href="https:/github.com/zendframework/zf1/pull/591">#591</a> ensures that
+        thet patch introduced to fix <a href="/security/advisory/ZF2015-06">ZF2015-06</a>
+        works for PHP 5.2 users.
+    </li>
+
+    <li><a href="https://github.com/zendframework/zf1/pull/587">#587</a> fixes a
+        regular expression in <code>Zend_Http_Response::extractHeaders()</code> to ensure
+        it will work with any valid header name, as well as empty header values.</li>
+    <li><a href="https://github.com/zendframework/zf1/pull/597">#597</a> updates
+        <code>Zend_Http_Client_Adapter_Curl</code> to ensure it properly distinguishes
+        between the <code>timeout</code> and <code>request_timeout</code> options,
+        using them to set <code>CURLOPT_CONNECTTIMEOUT</code> and <code>CURLOPT_TIMEOUT</code>,
+        respectively.  </li>
+</ul>
+
+<p>
+    For a full list of changes, see:
+</p>
+
+<ul>
+    <li><a href="/changelog/1.12.15">http://framework.zend.com/changelog/1.12.15</a></li>
+</ul>
+
+<h2>Zend Framework 2.4.7</h2>
+
+<p>
+    Zend Framework 2.4.7 has a single change:
+</p>
+
+<ul>
+    <li><a href="https://github.com/zendframework/zend-inputfilter/pull/15">zend-inputfilter #15</a>
+        ensures that input filters can validate not just arrays, but objects implementing
+        <code>ArrayAccess</code>, a scenario that broke with fixes introduced for 2.4.5.
+    </li>
+</ul>
+
+<h2>Long Term Support</h2>
+
+<p>
+    As a reminder, the 2.4 series is our current Long Term Support release, and will
+    receive security and critical bug fixes until 31 March 2018.
+</p>
+
+<p>
+    You can opt-in to the LTS version by pinning your <code>zendframework/zendframework</code>
+    <a href="https://getcomposer.org">Composer</a> requirement to the version <code>~2.4.0</code>.
+</p>
+
+<p>
+    <a href="/long-term-support">Visit our Long Term Support information page</a> for more information.
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 1.12.14, 2.4.6 and 2.5.2 Released!</title>
+      <pubDate>Mon, 03 Aug 2015 19:15:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-1-12-14-2-4-6-and-2-5-2-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-1-12-14-2-4-6-and-2-5-2-released.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>
+    The Zend Framework community is pleased to announce the immediate availability
+    of:
+</p>
+
+<ul>
+    <li>Zend Framework <strong>1.12.14</strong></li>
+    <li>Zend Framework <strong>2.4.6</strong></li>
+    <li>Zend Framework <strong>2.5.2</strong></li>
+</ul>
+
+<ul>
+    <li>
+        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
+    </li>
+</ul>
+
+<p>
+    These releases contain a critical security fix.
 </p><h2>Security Fix</h2>
 
 <p>
-    One new security advisory has been made:
+    Zend Framework versions 1.12.14, and 2.4.6, and 2.5.2 introduced fixes for
+    <a href="/security/advisory/ZF2015-06">ZF2015-06</a>, a serious vulnerability 
+    in <code>ZendXml</code> when used under PHP-FPM to process multibyte XML
+    documents. The advisory provides full details; if you process XML in your
+    application and will be deploying or already deploy using PHP-FPM, we recommend
+    upgrading immediately.
+</ul>
+
+<h2>Other changes</h2>
+
+<p>
+    Zend Framework 1.12.14 has two other changes that may impact users:
 </p>
 
 <ul>
-    <li><a href="/security/advisory/ZF2015-02">ZF2015-02</a>, which patches
-        <kbd>Zend\Db</kbd>'s PostgreSQL platform to use proper escaping of
-        quotes for identifiers and values.
-    </li>
+    <li><code>Zend_Service_DeveloperGarden</code> was removed, as the service closed its API on 30
+        June 2015.</li>
+    <li><code>Zend_Service_Technorati</code> was removed, as the API has been unavailable for an
+        indeterminate amount of time.</li>
 </ul>
 
 <p>
-    For more information, follow the links above; if you use <kbd>Zend\Db</kbd>'s
-    PostgreSQL support, please upgrade immediately.
+    Both Zend Framework 2.4.6 and 2.5.2 also incorporate a change in <code>Zend\InputFilter</code>;
+    fixes done in the 2.4/2.5 series removed support for fallback values when performing validation;
+    that support has been reinstated with the latest releases.
 </p>
 
-<h2>2.3.5</h2>
+<h3>Changelog</h3>
 
 <p>
-    Th 2.3.5 release features over 20 patches, covering a number of components.
-    For the full list of changes, visit the changelog:
+    For the full changelog on each version:
 </p>
 
 <ul>
-    <li><a href="/changelog/2.3.5">Changelog</a></li>
-</ul>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Zend Framework 1.12.11 Released!</title>
-      <pubDate>Wed, 11 Feb 2015 17:00:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-1-12-11-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-1-12-11-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-    The Zend Framework community is pleased to announce the immediate availability
-    of:
-</p>
-
-<ul>
-    <li>Zend Framework <strong>1.12.11</strong></li>
+    <li><a href="/changelog/1.12.14">http://framework.zend.com/changelog/1.12.14</a></li>
+    <li><a href="/changelog/2.4.6">http://framework.zend.com/changelog/2.4.6</a></li>
+    <li><a href="/changelog/2.5.2">http://framework.zend.com/changelog/2.5.2</a></li>
 </ul>
 
-<p>You can download Zend Framework at:</p>
-
-<ul>
-    <li>
-        <a href="/downloads/latest#ZF1">http://framework.zend.com/downloads/latest#ZF1</a>
-    </li>
-</ul><h2>Fixes</h2>
+<h2>Long Term Support</h2>
 
 <p>
-    The primary rationale for the release was a problem introduced by a bugfix in 1.12.10
-    with regards to the <code>ViewRenderer</code> action helper. The fix was incorrectly
-    resolving the controller name, which led to problems primarily when using a custom
-    dispatcher with your application. 1.12.11 introduces a proper fix that addresses the
-    original issue, as well as the problem it introduced.
+    As a reminder, the 2.4 series is our current Long Term Support release, and will
+    receive security and critical bug fixes until 31 March 2018.
 </p>
 
 <p>
-    For the full list of changes, visit the changelog:
-</p>
-
-<ul>
-    <li><a href="/changelog/1.12.11">Changelog</a></li>
-</ul>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Announcing the Zend Framework 3 Roadmap</title>
-      <pubDate>Wed, 21 Jan 2015 17:00:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/announcing-the-zend-framework-3-roadmap.html</link>
-      <guid>http://framework.zend.com/blog/announcing-the-zend-framework-3-roadmap.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-  The most often-asked questions we get around the Zend Framework project
-  include: Where is Zend Framework heading? When will Zend Framework 3 be
-  released? What changes and enhancements should we expect?
+    You can opt-in to the LTS version by pinning your <code>zendframework/zendframework</code>
+    <a href="https://getcomposer.org">Composer</a> requirement to the version <code>~2.4.0</code>.
 </p>
 
 <p>
-  Since inception, our goal for Zend Framework has been to further the art of
-  PHP and ensure our users concentrate on the business logic of their
-  application rather than wasting time reinventing the plumbing. The plumbing is
-  Zend Framework’s job. We have continued to evolve ZF with best-in-class web
-  development practices, and have innovated in areas where we saw gaps; as an
-  example, we observed developers struggling with API development, which led us
-  to create the Apigility project on top of ZF2.
-</p>
-
-<p>
-  We have built an incredibly powerful framework with Zend Framework 2 that met
-  its key goals of flexibility, consistency and testability. However, the world
-  has changed since ZF2 was released, and the project needs to move with the
-  times. With that in mind, we have gathered feedback from our users and core
-  contributors to map the path forward.
-</p><p>
-  Zend Framework 3 will be an evolution from ZF2, concentrating on simplicity,
-  reusability, and performance.
-</p>
-
-<p>What’s involved?</p>
-
-<ul>
-  <li><strong>Separating components into individual, versioned
-    projects.</strong> This enables broader re-use and higher velocity of
-    innovation.</li>
-  <li>Strong emphasis on <strong>HTTP messages</strong>, with Matthew
-    leading the <a href="https://github.com/php-fig/fig-standards/blob/master/proposed/http-message.md">PSR-7
-    specification</a>.</li>
-  <li><strong>Updating our existing full-stack MVC framework</strong> to depend
-    on the newly independent components for better reuse and simplicity. ZF2 MVC
-    applications will have a documented upgrade path to ZF3 requiring minimal
-    changes.</li>
-  <li><strong>Embracing <a 
-    href="https://mwop.net/blog/2015-01-08-on-http-middleware-and-psr-7.html">middleware</a></strong> 
-    runtime patterns as a lighter weight <em>alternative</em> to the enterprise 
-    MVC framework stack.</li>
-  <li>Enabling Apigility to work as a middleware stack, for better performance
-    and simplicity, with the same streamlined, powerful user experience.</li>
-  <li><strong>Optimizing for PHP 7</strong>, but <strong>supporting PHP
-    5.5</strong> onwards.</li>
-</ul>
-
-<p>
-  We have already done a lot of thinking (and coding!) in this direction, and we
-  intend to release ZF3 in Q3 2015 &mdash; yes, this year!
-</p>
-
-<p>
-  As a community project, we need everyone's help to make our plans a reality.
-  Please join the effort and help us create Zend Framework 3! You can do so in
-  the <a href="http://framework.zend.com/archives/subscribe/">zf-contributors
-  mailing list</a>, or via the #zftalk.dev Freenode IRC channel.
-</p>
-
-<p>
-  We are very excited about the changes to come, and hope you are as well!
-</p>
-
-<center>
-  <p><b>&mdash; The ZF Team &mdash;</b></p>
-</center>
-
-<p>
-  P.S. We will be posting some additional, more detailed thoughts regarding our
-  observations, the statement of direction, timelines, and technology choices we
-  are making in more detailed, follow-up posts. Keep an eye on our blog for
-  these updates.
+    <a href="/long-term-support">Visit our Long Term Support information page</a> for more information.
 </p>]]></content:encoded>
       <slash:comments>0</slash:comments>
     </item>
     <item>
-      <title>Zend Framework 1.12.10 Released!</title>
-      <pubDate>Wed, 14 Jan 2015 20:25:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-1-12-10-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-1-12-10-released.html</guid>
+      <title>Zend Framework 2.4.5 Released!</title>
+      <pubDate>Tue, 28 Jul 2015 16:45:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-2-4-5-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-2-4-5-released.html</guid>
       <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
       <dc:creator>Matthew Weier O'Phinney</dc:creator>
       <content:encoded><![CDATA[<p>
     The Zend Framework community is pleased to announce the immediate availability
-    of:
-</p>
-
-<ul>
-    <li>Zend Framework <strong>1.12.10</strong></li>
-</ul>
-
-<p>You can download Zend Framework at:</p>
-
-<ul>
-    <li>
-        <a href="/downloads/latest#ZF1">http://framework.zend.com/downloads/latest#ZF1</a>
-    </li>
-</ul><h2>Incremental improvements</h2>
-
-<p>
-    Zend Framework 1.12 is in maintenance mode, but that has not slowed 
-    activity on the repository; this release features almost 40 bugfixes!
-    Among other changes, contributors have also provided improvements for
-    our build process, including the removal of tests and documentation
-    when adding ZF1 to your project via Composer.
-</p>
-
-<p>
-    For the full list of changes, visit the changelog:
-</p>
-
-<ul>
-    <li><a href="/changelog/1.12.10">Changelog</a></li>
-</ul>
-
-<h2>Thank You!</h2>
-
-<p>
-    As usual, thanks go out to all contributors to this version; Zend Framework 1's
-    stability and robustness is due to your efforts. I also want to thank 
-    <a href="http://akrabat.com">Rob Allen</a> and
-    <a href="https://github.com/froschdesign">Frank Brückner</a> for shepherding
-    along contributions and acting as release managers!
-</p>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Zend Framework 2.2.9 and 2.3.4 Released!</title>
-      <pubDate>Wed, 14 Jan 2015 19:00:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-2-2-9-and-2-3-4-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-2-2-9-and-2-3-4-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-    The Zend Framework community is pleased to announce the immediate availability
-    of:
-</p>
-
-<ul>
-    <li>Zend Framework <strong>2.2.9</strong></li>
-    <li>Zend Framework <strong>2.3.4</strong></li>
-</ul>
-
-<ul>
-    <li>
-        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
-    </li>
-</ul>
-
-<p>
-    These are security releases; we strongly encourage users to upgrade.
-</p><h2>Security Fix</h2>
-
-<p>
-    One new security advisory has been made:
-</p>
-
-<ul>
-    <li><a href="/security/advisory/ZF2015-01">ZF2015-01</a>, which patches
-        <kbd>Zend\Session</kbd>'s handling of session validators to ensure
-        that any metadata they store in the session for validation of subsequent
-        requests is properly persisted.
-    </li>
-</ul>
-
-<p>
-    For more information, follow the links above; if you use <kbd>Zend\Session</kbd>
-    validators, please upgrade immediately.
-</p>
-
-<h2>2.3.4</h2>
-
-<p>
-    Th 2.3.4 release features over 200 patches, ranging from fixes in coding 
-    standards issues to the security patch listed above. For the full list
-    of changes, visit the changelog:
-</p>
-
-<ul>
-    <li><a href="/changelog/2.3.4">Changelog</a></li>
-</ul>
-
-<h2>Thank You!</h2>
-
-<p>
-    As usual, thanks go out to all contributors to these versions; Zend Framework's
-    continued improvement is based on your efforts. I also want to thank
-    <a href="https://github.com/ocramius">Marco Pivetta</a> in particular, for the tireless
-    effort he has made in triaging and merging pull requests for the 2.3.4 release; his
-    efforts have been invaluable.
-</p>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Zend Framework 1.12.9, 2.2.8, and 2.3.3 Released!</title>
-      <pubDate>Wed, 17 Sep 2014 15:30:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-1-12-9-2-2-8-and-2-3-3-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-1-12-9-2-2-8-and-2-3-3-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-    The Zend Framework community is pleased to announce the immediate availability
-    of:
-</p>
-
-<ul>
-    <li>Zend Framework <strong>1.12.9</strong></li>
-    <li>Zend Framework <strong>2.2.8</strong></li>
-    <li>Zend Framework <strong>2.3.3</strong></li>
-</ul>
-
-<ul>
-    <li>
-        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
-    </li>
-</ul>
-
-<p>
-    These are security releases; we strongly encourage users to upgrade.
-</p><h2>Security Fixes</h2>
-
-<p>
-    Two new security advisories have been made:
-</p>
-
-<ul>
-    <li><a href="/security/advisory/ZF2014-05">ZF2014-05</a>, which mititages
-        null byte poisoning of the password provided for LDAP authentication,
-        thus prevening unauthorized LDAP binding. This corrects for unpatched
-        versions of PHP (versions 5.5.11 and below, 5.4.27 and below, and any
-        prior releases).
-    </li>
-
-    <li><a href="/security/advisory/ZF2014-06">ZF2014-06</a>, which mitigates
-        null byte poisoning of quoted SQL values provided to the sqlsrv extension,
-        thus preventing a potential SQL injection vector.
-    </li>
-</ul>
-
-<p>
-    For more information, follow the links above; if you use either of the components
-    affected, please upgrade as soon as possible.
-</p>
-
-<h2>Thank You!</h2>
-
-<p>
-    Thank you to the two reporters of the security issues, Matthew Daley (LDAP
-    vulnerability) and Jonas Sandström (sqlsrv vulnerability).
-</p>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Zend Framework 1.12.8 Released!</title>
-      <pubDate>Thu, 04 Sep 2014 21:10:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-1-12-8-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-1-12-8-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-    The Zend Framework community is pleased to announce the immediate availability
-    of Zend Framework 1.12.8!
-</p>
-
-<ul>
-    <li>
-        <a href="/downloads/latest#ZF1">http://framework.zend.com/downloads/latest#ZF1</a>
-    </li>
-</ul>
-
-<p>
-    This is a maintenance release.
-</p><h2>Notable Changes</h2>
-
-<ul>
-    <li><a href="https://github.com/zendframework/zf1/pull/418">#418</a> Improved regex for
-        SQL group, order, from statement. This is an improvement of the Security Advisory
-        <a href="http://framework.zend.com/security/advisory/ZF2014-04">ZF2014-04</a>,
-        to prevent potential SQL injection. This PR that can be a potential BC break for
-        complex SQL code. See below for more information.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/360">#360</a> updates Zend_Locale
-        to use <a href="http://cldr.unicode.org">CLDR</a> version 25.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/98">#98</a> allows editing and
-        flattening of text form fields within PDF documents.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/375">#375</a> implements
-        <kbd>Zend_Pdf::setJavascript()</kbd>, <kbd>Zend_Pdf::addJavascript()</kbd> and
-        <kbd>Zend_Pdf::resetJavaScript()</kbd>.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/414">#414</a> adds the
-        <kbd>Microsoft_Console</kbd> component from the Windows Azure SDK for PHP into
-        the <kbd>Zend_Service_Console</kbd> component, ensuring that WindowsAzure
-        command line functionality included in the framework can now work.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/385">#385</a> adds support for
-        DateTime fractional seconds under PHP 5.6+.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/382">#382</a> ensures that
-        orphaned metadata cache files are removed when <kbd>Zend_Cache::CLEANING_MODE_ALL</kbd>
-        is used.</li>
-    <li><a href="https://github.com/zendframework/zf1/pull/410">#410</a> ensures that calls
-        to reset the status of the libxml entity loader happen as soon as possible,
-        to prevent potential threading issues under php-fpm (since the settings
-        are per process, not per-request, in that environment).</li>
-</ul>
-
-<p>See <a href="http://framework.zend.com/changelog/1.12.8">the changelog</a> for full details.</p>
-
-<h2>Potential BC break</h2>
-
-<p>The PR <a href="https://github.com/zendframework/zf1/pull/418">#418</a> can introduces
-potential BC break in presence of complex SQL statements (for instance using SQL sub-functions).</p>
-<p>To fix this you can use <strong>Zend_Db_Expr()</strong> in the group(), order() or from()
-functions, if your SQL code doesn't work after the upgrade to ZF 1.12.8.</p>
-
-
-<h2>Thank You!</h2>
-
-<p>
-    As always, I'd like to thank the many contributors who made this
-    release possible!
-</p>
-
-<h4>Updates</h4>
-
-<ul>
-    <li>2014-09-04: Added section on potential BC break.</li>
-</ul>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Apigility 1.0.4 Released!</title>
-      <pubDate>Wed, 13 Aug 2014 21:30:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/apigility-1-0-4-released.html</link>
-      <guid>http://framework.zend.com/blog/apigility-1-0-4-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<h1>Apigility 1.0.4</h1>
-
-<p>We are pleased to announce the immediate availability of Apigility 1.0.4!</p>
-
-<ul>
-    <li><a href="https://apigility.org/download">https://apigility.org/download</a></li>
-</ul>
-
-<p>This is our fourth maintenance release of Apigility.</p><h2>IBM i Support</h2>
-
-<p>This release contains a number of fixes to ensure the ability to use Apigility on IBM i. Among them:</p>
-
-<ul>
-    <li>We are pinning support to Zend Framework 2.3.2 and above, which contains updates supporting DB2:<br /></li>
-    <li>Full transaction support.<br /></li>
-    <li>Fixed LIMIT support, allowing for paginated DB result sets.<br /></li>
-    <li>Fixes to database-backed authentication<br /></li>
-    <li>The ability to specify database driver options via the Admin UI. Most DB2<br /> connections need additional driver options specified, and you can now do so via the UI.</li>
-</ul>
-
-<h2>UI Improvements</h2>
-
-<p>One lingering issue we've had reported is an error when creating APIs: the UI reports an error, but the API has been created. We made several patches that, in aggregate, should resolve these issues going forward:</p>
-
-<ul>
-    <li>We discovered that our promise chains in the Admin UI were not optimally constructed, and could potentially raise errors under the appropriate conditions; these have been fixed.<br /></li>
-    <li>We introduced comprehensive cache control headers to prevent client-side caching of Admin API calls.<br /></li>
-    <li>We introduced a timeout between successful completion of API creation and deletion calls, and subsequent fetching of the API list from the Admin API. In working with <a href="https://github.com/jguittard">Julien Guittard</a>, we were able to find an optimal timeout that resolves the issue.</li>
-</ul>
-
-<p>Additionally, for those users using Apache to serve the Admin UI and Admin API, we have stopped using backslashes in URI identifiers (Apache rejects URI-encoded slashes by default).</p>
-
-<p>Other fixes were also made that are detailed under the &quot;zf-apigility-admin&quot; header below.</p>
-
-<h2>Documentation fixes</h2>
-
-<p>zf-apigility-documentation was not using the correct configuration key to discover input filters, which meant it was not reporting fields at all. This had further implications for zf-apigility-documentation-swagger, which was then unable to expose models based on those fields. This situation is now resolved.</p>
-
-<h2>Collections</h2>
-
-<p>While Apigility has supported retrieving collections in REST services, creating, replacing, updating, or deleting them has been an exercise left to the developer previously. With this release, field definitions can now be used to validate the items passed to collections, giving collections first-class support.</p>
-
-<h2>Console</h2>
-
-<p>zf-console was extensively updated, with many contributions and ideas from Zend's <a href="https://github.com/slaff">Slavey Karadzhov</a>. These include:</p>
-
-<ul>
-    <li>Simplification of mapping the command name to the route. By default the command name is considered the first argument of the route now.<br /></li>
-    <li>Command handlers may now be specified in the configuration via the <code>handler</code> key for a command.<br /></li>
-    <li>A number of useful CLI-specific filters are now provided, including an <code>Explode</code> filter (split comma or other delimited arguments to an array), a <code>QueryString</code> filter (specify arguments in query string format), and a <code>Json</code> filter (specify arguments in JSON).<br /></li>
-    <li>Better error handling and error reporting.<br /></li>
-    <li>The ability to generate autocompletion scripts for your CLI commands.</li>
-</ul>
-
-<p>zf-console is shaping up as a capable microframework for CLI commands!</p>
-
-<h2>Thank You!</h2>
-
-<p>Many thanks to everyone who contributed fixes, big or small, towards this release!</p>
-
-<h2>Issues closed:</h2>
-
-<h3>zf-apigility-admin</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/220">Timeout delay upon API creation and deletion</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/219">Introduced timeouts to API create/delete actions</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/218">Disable HTTP caching for Admin API</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/215">url-encoded backslashes cause issues in Apache</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/214">File permissions upon resources files creation</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/213">Revise promise chains</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/212">Allow defining DB adapter driver options</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/211">Resolves #210 by correcting the dead link</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/205">Undefined index: input_filter_specs</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/204">OAuth2 Mongo Adapter cannot be created successfully</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/196">zf-hal option 'render_collections' can break Apigility admin</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/190">Feature request: Ability to disable pagination from admin ui</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/issues/175">Creating new API fails with &quot;API not found&quot;</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-admin/pull/172">Can't Edit OAuth Adapter</a></li>
-</ul>
-
-<h3>zf-apigility-documentation</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-apigility-documentation/pull/13">Fixed usage of configuration-driven creation of input filters</a></li>
-</ul>
-
-<h3>zf-apigility-documentation-swagger</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-apigility-documentation-swagger/pull/6">Use service name instead of api name to describe endpoint</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-documentation-swagger/pull/5">Add dependency</a></li>
-</ul>
-
-<h3>zf-apigility-skeleton</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-apigility-skeleton/pull/76">Bump ZF2 version requirement</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-skeleton/pull/73">Prefix config glob path</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-skeleton/issues/71">Apache configuration</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-apigility-skeleton/pull/67">Ensure default Apache site is disabled</a></li>
-</ul>
-
-<h3>zf-console</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-console/pull/11">Added out-of-the-box autocompletion help for all applications based on zf-console</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-console/pull/9">Better error handling</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-console/pull/8">Useful filters</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-console/pull/7">Allow setting handler in route configuration</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-console/pull/5">Simplify mapping the command name to the route</a></li>
-</ul>
-
-<h3>zf-content-validation</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-content-validation/pull/20">Bug: Validation bypassed when POST is empty</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-content-validation/pull/19">isCollection() method returning true for entities</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-content-validation/pull/3">Problems concerning validating collections</a></li>
-</ul>
-
-<h3>zf-deploy</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-deploy/pull/27">Remove include of application configuration</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-deploy/pull/26">Cannot validate deployment.xml if zfdeploy.phar is in a folder with spaces</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-deploy/pull/22">Updated to use features from latest master of zf-console</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-deploy/pull/21">Execute composer.phar with the PHP binary running zf-deploy</a></li>
-</ul>
-
-<h3>zf-hal</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-hal/issues/51">422 status when my entity has no identifier on creation</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-hal/pull/50">Possible issue on HAL collection first link of the paginator.</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-hal/pull/48">Allow -1 for page size</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-hal/pull/47">Links in metadata map are no longer honored</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-hal/pull/45">Update Hal Plugin to support entities with $id = 0</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-hal/pull/39">Can't return a collection object with embedded entities when content negotiation is set to Json</a></li>
-</ul>
-
-<h3>zf-mvc-auth</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-mvc-auth/pull/36">deny_by_default inverts permission rules</a><li>
-    <li><a href="https://github.com/zfcampus/zf-mvc-auth/pull/35">Support for OAuth2 Token in Query String / POST Body</a></li>
-</ul>
-
-<h3>zf-oauth2</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-oauth2/pull/58">Use content negotiation in AuthController</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-oauth2/pull/56">Ensure bodyParams is an array before creating request</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-oauth2/pull/54">Update PdoAdapter.php</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-oauth2/pull/48">refactored the class to support better reuse when extending the class</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-oauth2/issues/46">Separate MongoClient creation from MongoAdapter factory</a></li>
-</ul>
-
-<h3>zf-rest:</h3>
-
-<ul>
-    <li><a href="https://github.com/zfcampus/zf-rest/pull/43">Allow returning entities without identifiers from creation routines</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-rest/pull/39">Allow Header tied to 'id' param.</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-rest/pull/38">Can't attach to a resource's event using the SharedEventManager</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-rest/pull/36">Update RestController to handle entities with $id = 0</a><br /></li>
-    <li><a href="https://github.com/zfcampus/zf-rest/pull/31">Can't return a collection object with embedded entities when content negotiation is set to Json</a></li>
-</ul>]]></content:encoded>
-      <slash:comments>0</slash:comments>
-    </item>
-    <item>
-      <title>Zend Framework 2.3.2 Released!</title>
-      <pubDate>Mon, 11 Aug 2014 17:30:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-2-3-2-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-2-3-2-released.html</guid>
-      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
-      <dc:creator>Matthew Weier O'Phinney</dc:creator>
-      <content:encoded><![CDATA[<p>
-    The Zend Framework community is pleased to announce the immediate availability
-    of Zend Framework 2.3.2!
+    of Zend Framework <strong>2.4.5</strong>. You can download it from the Zend Framework site:
 </p>
 
 <ul>
@@ -634,116 +876,148 @@ functions, if your SQL code doesn't work after the upgrade to ZF 1.12.8.</p>
 </ul>
 
 <p>
-    This is the second maintenance release in the 2.3 series, and resolves more than 100 issues.
-</p><h2>Notable Changes</h2>
+    This is a <a href="/long-term-support/">Long Term Support</a> release.
+</p><h2>Bugfix</h2>
 
 <p>
-    The following changes are noted as being fixes that may have potential implications
-    for existing applications.
+    This release contains a single critical bugfix. A <a href="https://github.com/zendframework/zend-inputfilter/pull/7">developer 
+    reported an issue against zend-inputfilter</a>, indicating that the combination
+    of <em>required</em> and <em>allow_empty</em> was not working as expected.
+    When the given input was missing from the submitted data set, the set was
+    still considered valid, when it should not be. When the value was present but
+    empty, validation worked as expected.
 </p>
 
-<ul>
-    <li><a href="https://github.com/zendframework/zf2/pull/6295">#6295</a>
-        introduces a slight change to how <kbd>Zend\Form\Fieldset</kbd> handles disabled 
-        values. Previously, they were represented in the form, and still 
-        processed on submit, which allowed the possibility of changing the 
-        value. This pull request modifies the behavior to extract the original 
-        value from any bound data if present and use that value instead, which 
-        is the correct behavior.
-    </li>
-
-    <li><a href="https://github.com/zendframework/zf2/pull/6423">#6423</a>
-        modifies the behavior of <kbd>Zend\Validator\File\UploadFile</kbd> to only 
-        return the <kbd>FILE_NOT_FOUND</kbd> error if upload was successful; previously, 
-        it incorrectly would report this error even if an error occurred during 
-        upload.
-    </li>
-</ul>
-
-<p>For the full changelog, visit:</p>
-
-<ul>
-    <li><a href="/changelog/2.3.2">http://framework.zend.com/changelog/2.3.2</a></li>
-</ul>
-
-<h2>Thank You!</h2>
+<p>
+    We supplied a patch to ensure behavior is as expected. The patch is also applied
+    to zend-inputfilter 2.5.2.
+</p>
 
 <p>
-    A big thank you to the host of contributors who helped make this
-    maintenance release a reality!
+    As this scenario affects a common use case for input validation, we deemed 
+    the issue critical and backported the fix to the LTS release.
 </p>]]></content:encoded>
       <slash:comments>0</slash:comments>
     </item>
     <item>
-      <title>Zend Framework 1.12.7 Released!</title>
-      <pubDate>Thu, 12 Jun 2014 20:00:00 +0000</pubDate>
-      <link>http://framework.zend.com/blog/zend-framework-1-12-7-released.html</link>
-      <guid>http://framework.zend.com/blog/zend-framework-1-12-7-released.html</guid>
+      <title>Zend Framework 2.4.4 Released!</title>
+      <pubDate>Tue, 21 Jul 2015 16:45:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-2-4-4-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-2-4-4-released.html</guid>
       <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
       <dc:creator>Matthew Weier O'Phinney</dc:creator>
       <content:encoded><![CDATA[<p>
     The Zend Framework community is pleased to announce the immediate availability
-    of Zend Framework 1.12.7:
+    of Zend Framework <strong>2.4.4</strong>. You can download it from the Zend Framework site:
 </p>
 
 <ul>
     <li>
-        <a href="/downloads/latest#ZF1">http://framework.zend.com/downloads/latest#ZF1</a>
+        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
     </li>
 </ul>
 
 <p>
-    This release contains an important security fix in 
-    <code>Zend_Db_Select</code>; we strongly encourage users of this component to 
-    upgrade.
-</p><h2>Security Fixes</h2>
+    This is a <a href="/long-term-support/">Long Term Support</a> release.
+</p><h2>Bugfix</h2>
 
 <p>
-    One new security advisory has been made, and has been patched in 1.12.7:
+    This release contains a single critical bugfix. A <a href="https://github.com/zendframework/zend-stdlib/pull/9">developer 
+    reported an issue against zend-stdlib</a>
+    indicating that our count increment in 
+    <code>Zend\Stdlib\PriorityList</code> was incrementing incorrectly,
+    and failing to take into account whether or not the item already was 
+    present.
 </p>
 
 <p>
-    <a href="/security/advisory/ZF2014-04">ZF2014-04</a>, which mitigates 
-    a potential SQL Injection (SQLi) vector when usiing ORDER BY clauses in
-    <kbd>Zend_Db_Select</kbd>; SQL function calls were improperly detected, rendering
-    ORDER clauses such as <kbd>MD5(1);drop table foo</kbd> unfiltered. The
-    logic has been updated to prevent SQLi vectors, and users of this functionality
-    are strongly encouraged to upgrade immediately.
-</ul>
-
-<p>
-    For more information, follow the link above; if you use the component
-    affected, please upgrade as soon as possible.
-</p>
-
-<h2>Important Changes</h2>
-
-<p>
-    In addition to the security fix above, a number of other important changes
-    were made, including:
+    As this scenario affects usage of PriorityList with duplicate data, one of 
+    its specific use cases, we deemed the issue critical and backported the fix
+    to the LTS release.
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 2.4.3 Released!</title>
+      <pubDate>Thu, 18 Jun 2015 14:30:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-2-4-3-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-2-4-3-released.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>
+    The Zend Framework community is pleased to announce the immediate availability
+    of Zend Framework <strong>2.4.3</strong>. You can download it from the Zend Framework site:
 </p>
 
 <ul>
-    <li>Support for PHPUnit 4 and 4.1, both within the Zend Framework test suite
-        and inside the <kbd>Zend_Test_PHPUnit</kbd> component.</li>
-    <li>Backported support from ZF2 for recursive page removal within
-        <kbd>Zend_Navigation</kbd>.</li>
-    <li>Support within the <kbd>Hostname</kbd> validator for the newly released
-        IANA top level domains.</li>
-    <li>Forward-compatibility changes were made to ensure Zend Framework 1 will run on
-        the upcoming PHP 5.6.</li>
+    <li>
+        <a href="/downloads/latest">http://framework.zend.com/downloads/latest</a>
+    </li>
 </ul>
 
 <p>
-    For the complete list of changes, <a href="/changelog/1.12.7">read the changelog</a>.
-</p>
-
-<h2>Thank You!</h2>
+    This is a <a href="/long-term-support/">Long Term Support</a> release.
+</p><h2>Bugfix</h2>
 
 <p>
-    As always, I'd like to thank the many contributors who made this
-    release possible, particularly Cassiano Dal Pizzol and Lars Kneschke for
-    reporting the security vulnerability, and Enrico Zimuel for patching it.
+    This release contains a single critical bugfix. A <a 
+    href="https://github.com/zendframework/zend-view/pull/4">developer reported an issue against zend-view</a>
+    indicating that when using port forwarding, and particularly when combined with non-standard 
+    ports, the <code>ServerUrl</code> view helper was incorrectly generating URIs containing both 
+    the local port and the public port.  As an example, a server running on port 10081, but accessed 
+    via port 10088 was reporting a URI in the form "localhost:10088:10081". For purposes of public 
+    links, the public port 10088 <em>only</em> should be present in the generated URI.
+</p>
+
+<p>
+    As this scenario is common when using Vagrant, we deemed the issue critical and backported the fix
+    to the LTS release.
+</p>]]></content:encoded>
+      <slash:comments>0</slash:comments>
+    </item>
+    <item>
+      <title>Zend Framework 2.5.1 Released!</title>
+      <pubDate>Thu, 04 Jun 2015 15:30:00 +0000</pubDate>
+      <link>http://framework.zend.com/blog/zend-framework-2-5-1-released.html</link>
+      <guid>http://framework.zend.com/blog/zend-framework-2-5-1-released.html</guid>
+      <author>matthew@zend.com (Matthew Weier O'Phinney)</author>
+      <dc:creator>Matthew Weier O'Phinney</dc:creator>
+      <content:encoded><![CDATA[<p>Today we've released Zend Framework 2.5.1!</p>
+
+<p>
+    To update, use <a href="https://getcomposer.org">Composer</a>:
+</p>
+
+<pre class="highlight"><code>
+$ composer update zendframework/zendframework
+</code></pre><h3>Changes</h3>
+
+<p>
+    The only issue reported against 2.5.0 was a blocker for many: with the shift
+    to ZF becoming a metapackage, one component, <a href="https://github.com/zendframework/zend-ldap">zend-ldap</a>,
+    had a hard requirement on a specific PHP extension (ext/ldap), meaning that 
+    the extension then became a requirement for the entire framework.
+</p>
+
+<p>
+    ZF 2.5.1 addresses this by making zend/ldap a <a href="https://getcomposer.org/doc/04-schema.md#suggest">
+    suggested</a> component. <em>This means that the zend-ldap component is no longer installed
+    by default.</em> If you rely on zend-ldap for your application, you will need to
+    perform the following after upgrading to 2.5.1:
+</p>
+
+<pre class="highlight"><code>
+$ composer require zendframework/zend-ldap
+</code></pre>
+
+<p>
+    The above will add zend-ldap as a requirement to your project, ensuring it
+    is present going forward.
+</p>
+
+<p>
+    We also audited all other components for hard dependencies on extensions; no
+    other components did so.
 </p>]]></content:encoded>
       <slash:comments>0</slash:comments>
     </item>

@@ -151,6 +151,28 @@ return array(
                     ),
                 ),
             ),
+            'long-term-support'         => array(
+                'type'          => 'Segment',
+                'options'       => array(
+                    'route'    => '/long-term-support[/]',
+                    'defaults' => array(
+                        '__NAMESPACE__' => 'PageController\Controller',
+                        'controller'    => 'Page',
+                        'page'          => 'long-term-support',
+                    ),
+                ),
+            ),
+            'expressive' => array(
+                'type'    => 'Segment',
+                'options' => array(
+                    'route'    => '/expressive[/]',
+                    'defaults' => array(
+                        '__NAMESPACE__' => 'PageController\Controller',
+                        'controller'    => 'Page',
+                        'page'          => 'expressive',
+                    ),
+                ),
+            ),
             'zend-config-xml' => array(
                 'type'    => 'Segment',
                 'options' => array(
